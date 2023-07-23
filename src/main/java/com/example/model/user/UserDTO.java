@@ -4,7 +4,6 @@ import com.example.model.validator.CreateChecks;
 import com.example.model.validator.UniqueName;
 import com.example.model.validator.ValidRole;
 
-import jakarta.mvc.binding.MvcBinding;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -29,8 +28,6 @@ public class UserDTO {
 	public static final int MIN_PASSWORD_LENGTH = 8;
 	public static final int MAX_PASSWORD_LENGTH = 16;
 
-	@MvcBinding
-
 	// @NotBlank(message = "名前を入力してください。", groups = CreateChecks.class)
 	@Pattern(regexp = "a-zA-Z", message = "{user.name.Pattern}", groups = CreateChecks.class)
 	@NotBlank(message = "{user.name.NotBlank}", groups = CreateChecks.class)
@@ -40,14 +37,12 @@ public class UserDTO {
 	@FormParam("name")
 	private String name;
 
-	@MvcBinding
 	@NotBlank(message = "{user.role.NotBlank}")
 	// @Pattern(regexp="(USER|ADMIN)", message="${validatedValue}は存在しないロールです。")
 	@ValidRole(message = "{user.role.ValidRole}")
 	@FormParam("role")
 	private String role;
 
-	@MvcBinding
 	@NotBlank(message = "{user.password.NotBlank}", groups = CreateChecks.class)
 	@Size(min = MIN_PASSWORD_LENGTH, max = MAX_PASSWORD_LENGTH, message = "{user.password.Size}", groups = CreateChecks.class)
 	@Pattern(regexp = PASSWORD_REGEX, message = "{user.password.Pattern}", groups = CreateChecks.class)
@@ -57,7 +52,6 @@ public class UserDTO {
 	/**
 	 * 複数のフィールド間の相関関係は@AssertTrueでチェックできます。
 	 */
-	@MvcBinding
 	@AssertTrue(message = "{assert.NameMustNotIncludeAdminIfNotAdminRole}")
 	public boolean isNameMustNotIncludeAdminIfNotAdminRole() {
 		var pattern = java.util.regex.Pattern.compile("ADMIN", java.util.regex.Pattern.CASE_INSENSITIVE);

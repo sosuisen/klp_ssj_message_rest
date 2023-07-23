@@ -24,18 +24,13 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok:1.18.26'
 
     /*
-     * Jakarta MVC
-     * 全て implementation
+     * Jakarta REST(JAX-RS)
      */ 
-	implementation 'jakarta.mvc:jakarta.mvc-api:2.1.0'
-	implementation 'org.eclipse.krazo:krazo-core:3.0.1'
-	implementation 'org.eclipse.krazo:krazo-jersey:3.0.1'
-	
+    compileOnly 'org.glassfish.jersey.core:jersey-common:3.1.1'
+	compileOnly 'org.glassfish.jersey.core:jersey-server:3.1.1'
+
 	// Jakarta Bean Validation
 	implementation 'org.hibernate.validator:hibernate-validator:8.0.0.Final'
-	
-	// もしThymeleafを使いたいなら、下記をコメントアウトして、Gradleタスク＞build>classes実行
-	// implementation 'org.eclipse.krazo.ext:krazo-thymeleaf:3.0.0'
 }
 
 payaraMicro {

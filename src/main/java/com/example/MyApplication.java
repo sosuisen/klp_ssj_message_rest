@@ -1,16 +1,15 @@
 package com.example;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
-import jakarta.mvc.security.Csrf;
 import jakarta.ws.rs.ApplicationPath;
-import jakarta.ws.rs.core.Application;
 
 /**
  * このアプリを設定するために必須のクラスです。
- * Jakarta MVCは、JAX-RSというAPIの上に作られているため、
- * JAX-RSのクラス Application を継承したクラスを宣言する必要があります。
+ * JAX-RSでは、jakarta.ws.rs.core.Applicationのサブクラスである
+ * ResourceConfigを用いて、リソースの存在するパッケージ（com.example.controller）を
+ * 指定する必要があります。
  * 
  * @ApplicationPath は、このアプリが呼ばれるURLを指定するパスで、
  * コンテキストルート（通常はプロジェクト名）からの相対パスを書きます。
@@ -19,23 +18,10 @@ import jakarta.ws.rs.core.Application;
  * パスの先頭の/と末尾の/はあってもなくても同じです。
  */
 @ApplicationPath("/msg")
-public class MyApplication extends Application {
-	@Override
-	public Map<String, Object> getProperties() {
-		final Map<String, Object> map = new HashMap<>();
-		/**
-		 * EXPLICITの場合、コントローラ側で明示的に@CsrfProtectedを指定した場合のみ
-		 * CSRFトークンを検証。
-		 * IMPLICITの場合、指定がなくとも自動的にCSRFトークンを検証。
-		 * デフォルトは EXPLICIT
-		 */
-
-		map.put(Csrf.CSRF_PROTECTION, Csrf.CsrfOptions.IMPLICIT);
-
-		/**
-		 * Viewのファイルを置く場所の指定。デフォルトは /WEB-INF/views/
-		 */
-		// map.put(ViewEngine.VIEW_FOLDER, "/WEB-INF/th/");
-		return map;
+public class MyApplication extends ResourceConfig {
+	public MyApplication() {
+		packages("com.example.resources");
+		// @RolesAllowed 等のアノテーションでアクセス制御するために必要
+		register(RolesAllowedDynamicFeature.class);
 	}
 }

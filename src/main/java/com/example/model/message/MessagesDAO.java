@@ -3,12 +3,13 @@ package com.example.model.message;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.ArrayList;
 
 import javax.sql.DataSource;
 
 import jakarta.annotation.Resource;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 import lombok.NoArgsConstructor;
 
 /**
@@ -24,17 +25,8 @@ public class MessagesDAO {
 	@Resource(lookup = "jdbc/__default")
 	private DataSource ds;
 
-	// getAll()とserarch() のとき、JSP側へデータを渡すために用いる。
-	private final MessagesModel messagesModel;
-
-	@Inject
-	public MessagesDAO(MessagesModel messagesModel) {
-		 this.messagesModel = messagesModel;
-	}
-
-	public void getAll() {
-		// リダイレクト先で呼ばれた場合は無視する。
-		if (messagesModel.size() > 0) return;
+	public ArrayList<MessageDTO> getAll() {
+		ArrayList<MessageDTO> list = new ArrayList<>();
 		try (
 				Connection conn = ds.getConnection();
 				PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM messages");) {
@@ -43,14 +35,16 @@ public class MessagesDAO {
 				int myId = rs.getInt("id");
 				String name = rs.getString("name");
 				String message = rs.getString("message");
-				messagesModel.add(new MessageDTO(myId, name, message));
+				list.add(new MessageDTO(myId, name, message));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		return list;
 	}
 
-	public void search(String keyword) {
+	public ArrayList<MessageDTO> search(String keyword) {
+		ArrayList<MessageDTO> list = new ArrayList<>();
 		try (
 				Connection conn = ds.getConnection();
 				PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM messages WHERE message LIKE ?");) {
@@ -59,7 +53,7 @@ public class MessagesDAO {
 			pstmt.setString(1, "%" + keyword + "%");
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next()) {
-				messagesModel.add(new MessageDTO(
+				list.add(new MessageDTO(
 						rs.getInt("id"),
 						rs.getString("name"),
 						rs.getString("message")));
@@ -67,28 +61,43 @@ public class MessagesDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		return list;
 	}
 
-	public void create(MessageDTO mesDTO) {
+	public MessageDTO create(MessageDTO mesDTO) {
+		MessageDTO mes = null;
 		try (
 				Connection conn = ds.getConnection();
 				PreparedStatement pstmt = conn
-						.prepareStatement("INSERT INTO messages(name, message) VALUES(?, ?)")) {
+						.prepareStatement("INSERT INTO messages(name, message) VALUES(?, ?)", Statement.RETURN_GENERATED_KEYS);		
+				) {
 			pstmt.setString(1, mesDTO.getName());
 			pstmt.setString(2, mesDTO.getMessage());
 			pstmt.executeUpdate();
+			
+			// AUTOINCREMENTで生成された id を取得します。
+			ResultSet rs = pstmt.getGeneratedKeys();
+			rs.next();
+			int id = rs.getInt(1);
+
+			mes = new MessageDTO(id, mesDTO.getName(), mesDTO.getMessage());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		return mes;
 	}
 
-	public void deleteAll() {
+	public boolean deleteAll() {
 		try (
 				Connection conn = ds.getConnection();
 				PreparedStatement pstmt = conn.prepareStatement("DELETE from messages");) {
-			pstmt.executeUpdate();
+			int num = pstmt.executeUpdate();
+			if (num <= 0) {
+				return false;
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		return true;
 	}
 }
