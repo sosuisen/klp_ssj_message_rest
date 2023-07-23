@@ -11,7 +11,7 @@ import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.BeanParam;
-import jakarta.ws.rs.FormParam;
+import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -44,32 +44,24 @@ public class MessageResources {
 	}
 
 	@GET
-	@Path("list")
+	@Path("messages")
 	@Produces(MediaType.APPLICATION_JSON)
 	public ArrayList<MessageDTO> getMessages() {
 		return messagesDAO.getAll();
 	}
 
 	@POST
-	@Path("list")
+	@Path("messages")
 	@Produces(MediaType.APPLICATION_JSON)
 	public MessageDTO postMessage(@Valid @BeanParam MessageDTO mes) {
 		return messagesDAO.create(mes);
 	}
 
-	@POST
-	@Path("clear")
+	@DELETE
+	@Path("messages")
 	@RolesAllowed("ADMIN")
 	@Produces(MediaType.APPLICATION_JSON)
 	public boolean clearMessages() {
 		return messagesDAO.deleteAll();
 	}
-
-	@POST
-	@Path("search")
-	@Produces(MediaType.APPLICATION_JSON)
-	public ArrayList<MessageDTO> searchMessages(@FormParam("keyword") String keyword) {
-		return messagesDAO.search(keyword);
-	}
-
 }
