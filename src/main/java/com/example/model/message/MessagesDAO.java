@@ -3,6 +3,7 @@ package com.example.model.message;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
@@ -10,6 +11,7 @@ import javax.sql.DataSource;
 
 import jakarta.annotation.Resource;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.ws.rs.NotFoundException;
 import lombok.NoArgsConstructor;
 
 /**
@@ -25,25 +27,39 @@ public class MessagesDAO {
 	@Resource(lookup = "jdbc/__default")
 	private DataSource ds;
 
-	public ArrayList<MessageDTO> getAll() {
+	public ArrayList<MessageDTO> getAll() throws SQLException {
 		ArrayList<MessageDTO> list = new ArrayList<>();
 		try (
 				Connection conn = ds.getConnection();
 				PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM messages");) {
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next()) {
-				int myId = rs.getInt("id");
-				String name = rs.getString("name");
-				String message = rs.getString("message");
-				list.add(new MessageDTO(myId, name, message));
+				list.add(new MessageDTO(
+						rs.getInt("id"),
+						rs.getString("name"),
+						rs.getString("message")));
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 		return list;
 	}
 
-	public ArrayList<MessageDTO> search(String keyword) {
+	public MessageDTO get(int id) throws SQLException, NotFoundException {
+		try (
+				Connection conn = ds.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM messages WHERE id=?");) {
+			pstmt.setInt(1, id);
+			ResultSet rs = pstmt.executeQuery();
+			if (rs.next()) {
+				return new MessageDTO(
+						rs.getInt("id"),
+						rs.getString("name"),
+						rs.getString("message"));
+			}
+		}
+		throw new NotFoundException();
+	}
+
+	public ArrayList<MessageDTO> search(String keyword) throws SQLException {
 		ArrayList<MessageDTO> list = new ArrayList<>();
 		try (
 				Connection conn = ds.getConnection();
@@ -58,46 +74,60 @@ public class MessagesDAO {
 						rs.getString("name"),
 						rs.getString("message")));
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 		return list;
 	}
 
-	public MessageDTO create(MessageDTO mesDTO) {
-		MessageDTO mes = null;
+	public MessageDTO create(MessageDTO mesDTO) throws SQLException {
 		try (
 				Connection conn = ds.getConnection();
 				PreparedStatement pstmt = conn
-						.prepareStatement("INSERT INTO messages(name, message) VALUES(?, ?)", Statement.RETURN_GENERATED_KEYS);		
-				) {
+						.prepareStatement("INSERT INTO messages(name, message) VALUES(?, ?)",
+								Statement.RETURN_GENERATED_KEYS);) {
 			pstmt.setString(1, mesDTO.getName());
 			pstmt.setString(2, mesDTO.getMessage());
 			pstmt.executeUpdate();
-			
+
 			// AUTOINCREMENTで生成された id を取得します。
 			ResultSet rs = pstmt.getGeneratedKeys();
 			rs.next();
 			int id = rs.getInt(1);
 
-			mes = new MessageDTO(id, mesDTO.getName(), mesDTO.getMessage());
-		} catch (Exception e) {
-			e.printStackTrace();
+			return new MessageDTO(id, mesDTO.getName(), mesDTO.getMessage());
 		}
-		return mes;
 	}
 
-	public boolean deleteAll() {
+	public void deleteAll() throws SQLException {
 		try (
 				Connection conn = ds.getConnection();
-				PreparedStatement pstmt = conn.prepareStatement("DELETE from messages");) {
+				PreparedStatement pstmt = conn.prepareStatement("DELETE FROM messages");) {
+			pstmt.executeUpdate();
+		}
+	}
+
+	public void delete(int id) throws SQLException, NotFoundException {
+		try (
+				Connection conn = ds.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement("DELETE FROM messages WHERE id=?");) {
+			pstmt.setInt(1, id);
 			int num = pstmt.executeUpdate();
 			if (num <= 0) {
-				return false;
+				throw new NotFoundException();
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
-		return true;
+	}
+	
+	public void updateMessage(MessageDTO mesDTO) throws SQLException, NotFoundException {
+		try (
+				Connection conn = ds.getConnection();
+				PreparedStatement pstmt = conn
+						.prepareStatement("UPDATE messages SET message=? where id=?");) {
+			pstmt.setString(1, mesDTO.getMessage());
+			pstmt.setInt(2, mesDTO.getId());
+			int num = pstmt.executeUpdate();
+			if (num <= 0) {
+				throw new NotFoundException();
+			}
+		}
 	}
 }

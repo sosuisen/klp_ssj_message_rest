@@ -3,12 +3,14 @@ package com.example.model.user;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 
 import javax.sql.DataSource;
 
 import jakarta.annotation.Resource;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
+import jakarta.ws.rs.NotFoundException;
 import lombok.NoArgsConstructor;
 
 /**
@@ -24,41 +26,35 @@ public class UsersDAO {
 	@Resource(lookup = "jdbc/__default")
 	private DataSource ds;
 
-	private final UsersModel usersModel;
-
-	@Inject
-	public UsersDAO(UsersModel usersModel) {
-		this.usersModel = usersModel;
-	}
-
-	public void getAll() {
+	public ArrayList<UserDTO> getAll() throws SQLException {
+		ArrayList<UserDTO> list = new ArrayList<>();
 		try (
 				Connection conn = ds.getConnection();
 				PreparedStatement pstmt = conn.prepareStatement("SELECT name, role FROM users");) {
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next()) {
-				usersModel.add(new UserDTO(rs.getString("name"), rs.getString("role"), ""));
+				list.add(new UserDTO(
+						rs.getString("name"),
+						rs.getString("role"),
+						""));
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
+		return list;
 	}
 
-	public UserDTO get(String name) {
+	public UserDTO get(String name) throws SQLException, NotFoundException {
 		try (
 				Connection conn = ds.getConnection();
 				PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM users WHERE name=?");) {
 			pstmt.setString(1, name);
 			ResultSet rs = pstmt.executeQuery();
-			rs.next();
-			return new UserDTO(rs.getString("name"), rs.getString("role"), rs.getString("password"));
-		} catch (Exception e) {
-			e.printStackTrace();
+			if (rs.next())
+				return new UserDTO(rs.getString("name"), rs.getString("role"), rs.getString("password"));
 		}
-		return null;
+		throw new NotFoundException();
 	}
 
-	public void create(UserDTO userDTO) {
+	public UserDTO create(UserDTO userDTO) throws SQLException {
 		try (
 				Connection conn = ds.getConnection();
 				PreparedStatement pstmt = conn
@@ -67,41 +63,40 @@ public class UsersDAO {
 			pstmt.setString(2, userDTO.getRole());
 			pstmt.setString(3, userDTO.getPassword());
 			pstmt.executeUpdate();
-		} catch (Exception e) {
-			e.printStackTrace();
+
+			return new UserDTO(userDTO.getName(), userDTO.getRole(), userDTO.getPassword());
 		}
 	}
 
-	public void deleteAll() {
+	public void deleteAll() throws SQLException {
 		try (
 				Connection conn = ds.getConnection();
 				PreparedStatement pstmt = conn.prepareStatement("DELETE FROM users");) {
 			pstmt.executeUpdate();
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 	}
 
-	public void delete(String name) {
+	public void delete(String name) throws SQLException, NotFoundException {
 		try (
 				Connection conn = ds.getConnection();
 				PreparedStatement pstmt = conn.prepareStatement("DELETE FROM users WHERE name=?");) {
 			pstmt.setString(1, name);
-			pstmt.executeUpdate();
-		} catch (Exception e) {
-			e.printStackTrace();
+			int num = pstmt.executeUpdate();
+			if (num <= 0) {
+				throw new NotFoundException();
+			}
 		}
 	}
 
-	public void update(UserDTO userDTO) {
+	public void update(UserDTO userDTO) throws SQLException, NotFoundException {
 		try (
 				Connection conn = ds.getConnection();) {
+			int num = 0;
 			if (userDTO.getPassword().isEmpty())
 				try (PreparedStatement pstmt = conn.prepareStatement("UPDATE users SET role=? where name=?");) {
 					pstmt.setString(1, userDTO.getRole());
 					pstmt.setString(2, userDTO.getName());
-					pstmt.executeUpdate();
-
+					num = pstmt.executeUpdate();
 				}
 			else
 				try (PreparedStatement pstmt = conn
@@ -109,10 +104,11 @@ public class UsersDAO {
 					pstmt.setString(1, userDTO.getRole());
 					pstmt.setString(2, userDTO.getPassword());
 					pstmt.setString(3, userDTO.getName());
-					pstmt.executeUpdate();
+					num = pstmt.executeUpdate();
 				}
-		} catch (Exception e) {
-			e.printStackTrace();
+			if (num <= 0) {
+				throw new NotFoundException();
+			}
 		}
 	}
 }

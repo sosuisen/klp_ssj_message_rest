@@ -2,6 +2,8 @@ package com.example.model.user;
 
 import com.example.model.validator.CreateChecks;
 import com.example.model.validator.UniqueName;
+import com.example.model.validator.UpdateChecks;
+import com.example.model.validator.ValidPassword;
 import com.example.model.validator.ValidRole;
 
 import jakarta.validation.constraints.AssertTrue;
@@ -21,24 +23,20 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class UserDTO {
-	// 今回は他でも利用するためクラスフィールドで定義
 	public static final int MIN_NAME_LENGTH = 3;
 	public static final int MAX_NAME_LENGTH = 30;
 	public static final String PASSWORD_REGEX = "^[0-9a-zA-Z_\\-#\\^\\$%&@\\+\\*\\?]+$";
 	public static final int MIN_PASSWORD_LENGTH = 8;
 	public static final int MAX_PASSWORD_LENGTH = 16;
 
-	// @NotBlank(message = "名前を入力してください。", groups = CreateChecks.class)
-	@Pattern(regexp = "a-zA-Z", message = "{user.name.Pattern}", groups = CreateChecks.class)
 	@NotBlank(message = "{user.name.NotBlank}", groups = CreateChecks.class)
 	@Size(min = MIN_NAME_LENGTH, max = MAX_NAME_LENGTH, message = "{user.name.Size}", groups = CreateChecks.class)
-	@UniqueName(message = "{user.name.UniqueName}", groups = CreateChecks.class) 
-
+	@Pattern(regexp = "a-zA-Z", message = "{user.name.Pattern}", groups = CreateChecks.class)
+	@UniqueName(message = "{user.name.UniqueName}", groups = CreateChecks.class)
 	@FormParam("name")
 	private String name;
 
 	@NotBlank(message = "{user.role.NotBlank}")
-	// @Pattern(regexp="(USER|ADMIN)", message="${validatedValue}は存在しないロールです。")
 	@ValidRole(message = "{user.role.ValidRole}")
 	@FormParam("role")
 	private String role;
@@ -46,6 +44,7 @@ public class UserDTO {
 	@NotBlank(message = "{user.password.NotBlank}", groups = CreateChecks.class)
 	@Size(min = MIN_PASSWORD_LENGTH, max = MAX_PASSWORD_LENGTH, message = "{user.password.Size}", groups = CreateChecks.class)
 	@Pattern(regexp = PASSWORD_REGEX, message = "{user.password.Pattern}", groups = CreateChecks.class)
+	@ValidPassword(message = "{user.passwordValidPassword}", groups = UpdateChecks.class)
 	@FormParam("password")
 	private String password;
 

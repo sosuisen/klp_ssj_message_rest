@@ -11,13 +11,11 @@ import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
 @Documented
-@Constraint(validatedBy = RoleValidator.class)
+@Constraint(validatedBy = PasswordValidator.class)
 @Target({ FIELD })
 @Retention(RUNTIME)
-public @interface ValidRole {
-    String message() default "Invalid role";
+public @interface ValidPassword {
+    String message() default "Invalid password";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }
-
-

@@ -9,12 +9,11 @@ import lombok.NoArgsConstructor;
 
 /**
  * メッセージ情報の受け渡しに用いるDTO（Data Transfer Object）です。
- * 次の4か所で利用されます。
- * 1) list.jspで表示したフォームからPOSTされたデータを、
+ * 次の3か所で利用されます。
+ * 1) POSTされたデータを、
  *   MessageControllerのpostMessageメソッドの@BeanParamへ注入。
  * 2) MessagesDAOクラスのcreate()の引数
- * 3) MessagesModelに格納されるオブジェクト
- * 4) list.jspでmessagesModelから取り出されて表示。
+ * 3) MessagesDAOクラスのメソッドの戻り値
  * 
  * MessageDAOクラスでは、new でMessageDTOのインスタンスを作りたいので、
  * @AllArgsConstructor で全フィールドを引数にもつコンストラクタを追加
@@ -26,7 +25,7 @@ import lombok.NoArgsConstructor;
  * アノテーション @NoArgsConstructor も明示的に追加する必要があります。
  *
  * @BeanParam でデータを渡すためには
- * list.jspのフォーム内でのinput要素のnameと
+ * フォームパラメータのnameと
  * クラスのフィールドとの対応付けを
  * @FormParam で指定しておく必要があります。
  */
