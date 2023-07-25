@@ -2,6 +2,7 @@ package com.example.resources;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.logging.Level;
 
 import com.example.model.message.MessageDTO;
 import com.example.model.message.MessagesDAO;
@@ -10,6 +11,7 @@ import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.BeanParam;
 import jakarta.ws.rs.DELETE;
@@ -24,6 +26,7 @@ import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import lombok.NoArgsConstructor;
+import lombok.extern.java.Log;
 
 /**
  * JAX-RSのリソースクラスです。
@@ -39,15 +42,22 @@ import lombok.NoArgsConstructor;
  */
 @RequestScoped
 @NoArgsConstructor(force = true)
+@Log
 @PermitAll
 @Path("/messages/")
 @Produces(MediaType.APPLICATION_JSON)
 public class MessageResources {
 	private final MessagesDAO messagesDAO;
-
+	private final HttpServletRequest req;
+	
 	@Inject
-	public MessageResources(MessagesDAO messagesDAO) {
+	public MessageResources(MessagesDAO messagesDAO, HttpServletRequest req) {
 		this.messagesDAO = messagesDAO;
+		this.req = req;
+		log.log(Level.INFO, "[user]%s [ip]%s [url]%s".formatted(
+				req.getRemoteUser(),
+				req.getRemoteAddr(),
+				req.getRequestURL().toString()));
 	}
 
 	@GET
@@ -55,6 +65,7 @@ public class MessageResources {
 		try {
 			return messagesDAO.getAll();
 		} catch (SQLException e) {
+			log.log(Level.SEVERE, "Error in getAllMessages()", e);
 			throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
 		}
 	}
@@ -65,7 +76,7 @@ public class MessageResources {
 		try {
 			return messagesDAO.get(id);
 		} catch (SQLException e) {
-			e.printStackTrace();
+			log.log(Level.SEVERE, "Error in getMessage()", e);
 			throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
 		} catch (NotFoundException e) {
 			throw new WebApplicationException(Response.Status.NOT_FOUND);
@@ -77,18 +88,19 @@ public class MessageResources {
 		try {
 			return messagesDAO.create(mes);
 		} catch (SQLException e) {
-			e.printStackTrace();
+			log.log(Level.SEVERE, "Error in postMessage()", e);
 			throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
 		}
 	}
 
 	@PUT
+	@RolesAllowed("ADMIN")
 	public MessageDTO putMessage(@Valid @BeanParam MessageDTO mes) {
 		try {
 			messagesDAO.updateMessage(mes);
 			return messagesDAO.get(mes.getId());
 		} catch (SQLException e) {
-			e.printStackTrace();
+			log.log(Level.SEVERE, "Error in putMessage()", e);
 			throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
 		} catch (NotFoundException e) {
 			throw new WebApplicationException(Response.Status.NOT_FOUND);
@@ -101,7 +113,7 @@ public class MessageResources {
 		try {
 			messagesDAO.deleteAll();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			log.log(Level.SEVERE, "Error in deleteAllMessages()", e);
 			throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
 		}
 	}
@@ -113,7 +125,7 @@ public class MessageResources {
 		try {
 			messagesDAO.delete(id);
 		} catch (SQLException e) {
-			e.printStackTrace();
+			log.log(Level.SEVERE, "Error in deleteMessage()", e);
 			throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
 		} catch (NotFoundException e) {
 			throw new WebApplicationException(Response.Status.NOT_FOUND);
