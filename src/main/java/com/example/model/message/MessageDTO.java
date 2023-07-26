@@ -35,7 +35,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class MessageDTO {
-	@FormParam("id")
 	private int id;
 	
 	@NotBlank(message = "{message.name.NotBlank}")
