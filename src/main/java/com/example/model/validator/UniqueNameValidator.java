@@ -13,7 +13,12 @@ import jakarta.validation.ConstraintValidatorContext;
 
 @ApplicationScoped
 public class UniqueNameValidator implements ConstraintValidator<UniqueName, String> {
-	// JAX-RSではなぜか注入できない。迂回策として通常のJDBCドライバを用いて接続
+	/**
+	 * 現在の構成のJAX-RSではDataSourceをここに注入できない。
+	 * （dsはnullになる。理由は未解明。）
+	 * 迂回策としては、下記のようにDataSourceを用いず個別のDB接続をする(効率は悪い)、
+	 * またはBean Validatorを使わずリソースクラス側で検証処理をする。
+	 */
 	// @Resource(lookup = "jdbc/__default")
 	// private DataSource ds;
 

@@ -7,9 +7,11 @@ import jakarta.ws.rs.ApplicationPath;
 
 /**
  * このアプリを設定するために必須のクラスです。
- * JAX-RSでは、jakarta.ws.rs.core.Applicationのサブクラスである
- * ResourceConfigを用いて、リソースの存在するパッケージ（com.example.controller）を
- * 指定する必要があります。
+ * 
+ * JAX-RSの設定は、Jersey独自APIであるResourceConfig
+ * （jakarta.ws.rs.core.Applicationのサブクラス）
+ * を用いると容易にできます。
+ * Jersey以外の実装（RestEasy）の場合、ここは変更する必要があります。
  * 
  * @ApplicationPath は、このアプリが呼ばれるURLを指定するパスで、
  * コンテキストルート（通常はプロジェクト名）からの相対パスを書きます。
@@ -21,6 +23,8 @@ import jakarta.ws.rs.ApplicationPath;
 @ApplicationPath("/api")
 public class MyApplication extends ResourceConfig {
 	public MyApplication() {
+		// クラスパススキャンを用いたリソースクラスの自動発見。
+		// リソースクラスの存在するパッケージ名を指定します。
 		packages("com.example.resources");
 		// @RolesAllowed 等のアノテーションでアクセス制御するために必要
 		register(RolesAllowedDynamicFeature.class);

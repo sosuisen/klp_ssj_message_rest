@@ -24,11 +24,11 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok:1.18.26'
 
     /*
-     * Jakarta REST(JAX-RS)
+     * Jakarta REST(JAX-RS)の実装JerseyのAPIがコンパイル時のみ必要
+     * ResourceConfigというJersey独自のAPIを用いているため
      */ 
-    compileOnly 'org.glassfish.jersey.core:jersey-common:3.1.3'
 	compileOnly 'org.glassfish.jersey.core:jersey-server:3.1.3'
-
+    
 	// Jakarta Bean Validation
 	implementation 'org.hibernate.validator:hibernate-validator:8.0.1.Final'
 }
