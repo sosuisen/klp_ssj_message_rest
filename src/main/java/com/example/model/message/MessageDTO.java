@@ -1,5 +1,7 @@
 package com.example.model.message;
 
+import com.example.model.validator.ValidName;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import jakarta.ws.rs.FormParam;
@@ -35,11 +37,14 @@ import lombok.NoArgsConstructor;
 public class MessageDTO {
 	@FormParam("id")
 	private int id;
+	
+	@NotBlank(message = "{message.name.NotBlank}")
+	@ValidName(message = "{message.name.ValidName}")
 	@FormParam("name")
 	private String name;
 
-	@NotBlank(message = "{message.NotBlank}")
-	@Size(max = 140, message = "{message.Size}")
+	@NotBlank(message = "{message.message.NotBlank}")
+	@Size(max = 140, message = "{message.message.Size}")
 	@FormParam("message")
 	private String message;
 }

@@ -31,6 +31,11 @@ import jakarta.security.enterprise.identitystore.DatabaseIdentityStoreDefinition
 @Named
 @ApplicationScoped
 public class IdentityStoreConfig {
+	// NameValidator, UniqueNameValidatorで利用。
+	// JAX-RSではConstraintValidatorにおいて
+	// @Resource(lookup = "jdbc/__default")で
+	// DataSourceへ注入できないので迂回策。
+	public static String jdbc = "jdbc:h2:tcp://localhost/C:/pleiades-ssj2023/h2db";
 	/**
 	 * HASH_PARAMS は UserInitializeService でも用いる
 	 */

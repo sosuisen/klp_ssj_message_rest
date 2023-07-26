@@ -12,12 +12,12 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
 @ApplicationScoped
-public class UniqueNameValidator implements ConstraintValidator<UniqueName, String> {
+public class NameValidator implements ConstraintValidator<ValidName, String> {
 	// JAX-RSではなぜか注入できない。迂回策として通常のJDBCドライバを用いて接続
 	// @Resource(lookup = "jdbc/__default")
 	// private DataSource ds;
-
-	public UniqueNameValidator() {
+	
+	public NameValidator() {
 		try {
 			Class.forName("org.h2.Driver");
 		} catch (ClassNotFoundException e) {
@@ -41,6 +41,6 @@ public class UniqueNameValidator implements ConstraintValidator<UniqueName, Stri
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return !nameExists;
+		return nameExists;
 	}
 }

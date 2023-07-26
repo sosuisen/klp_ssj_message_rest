@@ -17,6 +17,7 @@ import jakarta.ws.rs.ApplicationPath;
  * 
  * パスの先頭の/と末尾の/はあってもなくても同じです。
  */
+
 @ApplicationPath("/api")
 public class MyApplication extends ResourceConfig {
 	public MyApplication() {

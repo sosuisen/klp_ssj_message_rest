@@ -12,13 +12,11 @@ import javax.sql.DataSource;
 import jakarta.annotation.Resource;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.NotFoundException;
-import lombok.NoArgsConstructor;
 
 /**
  * DAO for messages table
  */
 @ApplicationScoped
-@NoArgsConstructor(force = true)
 public class MessagesDAO {
 	/**
 	 * JNDIで管理されたDataSourceオブジェクトは@Resourceアノテーションで

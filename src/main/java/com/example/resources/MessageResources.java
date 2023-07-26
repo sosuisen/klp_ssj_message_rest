@@ -40,12 +40,13 @@ import lombok.extern.java.Log;
  * このままだとフィールドが初期化されない可能性があってコンパイルエラーとなります。
  * これを防ぐには(force=true)指定が必要です。
  */
+
 @RequestScoped
+@Produces(MediaType.APPLICATION_JSON)
 @NoArgsConstructor(force = true)
 @Log
 @PermitAll
-@Path("/messages/")
-@Produces(MediaType.APPLICATION_JSON)
+@Path("/messages")
 public class MessageResources {
 	private final MessagesDAO messagesDAO;
 	private final HttpServletRequest req;
@@ -83,6 +84,10 @@ public class MessageResources {
 		}
 	}
 
+	/**
+	 * @Valid での検証に失敗するとJAX-RSはConstraintViolationExceptionを投げます。
+	 * この例外は別途作成したConstraintViolationExceptionMapperクラスが引き取ります。
+	 */
 	@POST
 	public MessageDTO postMessage(@Valid @BeanParam MessageDTO mes) {
 		try {
