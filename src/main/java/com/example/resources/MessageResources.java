@@ -6,6 +6,7 @@ import java.util.logging.Level;
 
 import com.example.model.message.MessageDTO;
 import com.example.model.message.MessagesDAO;
+import com.example.model.validator.CreateChecks;
 
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
@@ -13,6 +14,7 @@ import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.groups.ConvertGroup;
 import jakarta.ws.rs.BeanParam;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -89,7 +91,7 @@ public class MessageResources {
 	 * この例外は別途作成したConstraintViolationExceptionMapperクラスが引き取ります。
 	 */
 	@POST
-	public MessageDTO postMessage(@Valid @BeanParam MessageDTO mes) {
+	public MessageDTO postMessage(@Valid @ConvertGroup(to = CreateChecks.class) @BeanParam MessageDTO mes) {
 		try {
 			return messagesDAO.create(mes);
 		} catch (SQLException e) {
@@ -99,9 +101,11 @@ public class MessageResources {
 	}
 
 	@PUT
+	@Path("{id}")
 	@RolesAllowed("ADMIN")
-	public MessageDTO putMessage(@Valid @BeanParam MessageDTO mes) {
+	public MessageDTO putMessage(@PathParam("id") int id, @Valid @BeanParam MessageDTO mes) {
 		try {
+			mes.setId(id);
 			messagesDAO.updateMessage(mes);
 			return messagesDAO.get(mes.getId());
 		} catch (SQLException e) {

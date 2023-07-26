@@ -1,5 +1,6 @@
 package com.example.model.message;
 
+import com.example.model.validator.CreateChecks;
 import com.example.model.validator.ValidName;
 
 import jakarta.validation.constraints.NotBlank;
@@ -37,8 +38,8 @@ import lombok.NoArgsConstructor;
 public class MessageDTO {
 	private int id;
 	
-	@NotBlank(message = "{message.name.NotBlank}")
-	@ValidName(message = "{message.name.ValidName}")
+	@NotBlank(message = "{message.name.NotBlank}", groups = CreateChecks.class)
+	@ValidName(message = "{message.name.ValidName}", groups = CreateChecks.class)
 	@FormParam("name")
 	private String name;
 
