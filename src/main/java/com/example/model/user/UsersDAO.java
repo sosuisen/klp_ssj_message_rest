@@ -24,38 +24,32 @@ public class UsersDAO {
 	@Resource(lookup = "jdbc/__default")
 	private DataSource ds;
 
-	public ArrayList<UserDTO> getAll() throws SQLException {
-		ArrayList<UserDTO> list = new ArrayList<>();
+	public ArrayList<UserRecord> getAll() throws SQLException {
+		ArrayList<UserRecord> list = new ArrayList<>();
 		try (
 				Connection conn = ds.getConnection();
 				PreparedStatement pstmt = conn.prepareStatement("SELECT name, role FROM users");) {
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next()) {
-				list.add(new UserDTO(
-						rs.getString("name"),
-						rs.getString("role"),
-						null));
+				list.add(new UserRecord(rs.getString("name"), rs.getString("role")));
 			}
 		}
 		return list;
 	}
 
-	public UserDTO get(String name) throws SQLException, NotFoundException {
+	public UserRecord get(String name) throws SQLException, NotFoundException {
 		try (
 				Connection conn = ds.getConnection();
 				PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM users WHERE name=?");) {
 			pstmt.setString(1, name);
 			ResultSet rs = pstmt.executeQuery();
 			if (rs.next())
-				return new UserDTO(
-						rs.getString("name"),
-						rs.getString("role"),
-						null);
+				return new UserRecord(rs.getString("name"), rs.getString("role"));
 		}
 		throw new NotFoundException();
 	}
 
-	public UserDTO create(UserDTO userDTO) throws SQLException {
+	public UserRecord create(UserDTO userDTO) throws SQLException {
 		try (
 				Connection conn = ds.getConnection();
 				PreparedStatement pstmt = conn
@@ -65,7 +59,7 @@ public class UsersDAO {
 			pstmt.setString(3, userDTO.getPassword());
 			pstmt.executeUpdate();
 
-			return new UserDTO(userDTO.getName(), userDTO.getRole(), null);
+			return new UserRecord(userDTO.getName(), userDTO.getRole());
 		}
 	}
 
@@ -93,7 +87,7 @@ public class UsersDAO {
 		try (
 				Connection conn = ds.getConnection();) {
 			int num = 0;
-			if (userDTO.getPassword().isEmpty())
+			if (userDTO.getPassword() == null || userDTO.getPassword().isEmpty())
 				try (PreparedStatement pstmt = conn.prepareStatement("UPDATE users SET role=? where name=?");) {
 					pstmt.setString(1, userDTO.getRole());
 					pstmt.setString(2, userDTO.getName());

@@ -6,6 +6,7 @@ import java.util.logging.Level;
 
 import com.example.auth.IdentityStoreConfig;
 import com.example.model.user.UserDTO;
+import com.example.model.user.UserRecord;
 import com.example.model.user.UsersDAO;
 import com.example.model.validator.CreateChecks;
 
@@ -51,7 +52,7 @@ public class UserResources {
 	}
 	
 	@GET
-	public ArrayList<UserDTO> getUsers() {
+	public ArrayList<UserRecord> getUsers() {
 		try {
 			return usersDAO.getAll();
 		} catch (SQLException e) {
@@ -62,7 +63,7 @@ public class UserResources {
 	
 	@GET
 	@Path("{name}")
-	public UserDTO getUser(@PathParam("name") String name) {
+	public UserRecord getUser(@PathParam("name") String name) {
 		try {
 			return usersDAO.get(name);
 		} catch (SQLException e) {
@@ -74,8 +75,10 @@ public class UserResources {
 	}
 	
 	@POST
-	public UserDTO postUser(@Valid @ConvertGroup(to = CreateChecks.class) @BeanParam UserDTO user) {
+	public UserRecord postUser(@Valid @ConvertGroup(to = CreateChecks.class) @BeanParam UserDTO user) {
 		try {
+			var hash = passwordHash.generate(user.getPassword().toCharArray());
+			user.setPassword(hash);
 			return usersDAO.create(user);
 		} catch (SQLException e) {
 			log.log(Level.SEVERE, "Error in postUser()", e);
@@ -85,7 +88,7 @@ public class UserResources {
 	
 	@PUT
 	@Path("{name}")
-	public UserDTO putUser(@PathParam("name") String name, @Valid @BeanParam UserDTO user) {
+	public UserRecord putUser(@PathParam("name") String name, @Valid @BeanParam UserDTO user) {
 		try {
 			user.setName(name);
 			usersDAO.update(user);
