@@ -34,7 +34,7 @@ public class UsersDAO {
 				list.add(new UserDTO(
 						rs.getString("name"),
 						rs.getString("role"),
-						""));
+						null));
 			}
 		}
 		return list;
@@ -47,7 +47,10 @@ public class UsersDAO {
 			pstmt.setString(1, name);
 			ResultSet rs = pstmt.executeQuery();
 			if (rs.next())
-				return new UserDTO(rs.getString("name"), rs.getString("role"), rs.getString("password"));
+				return new UserDTO(
+						rs.getString("name"),
+						rs.getString("role"),
+						null);
 		}
 		throw new NotFoundException();
 	}
@@ -62,7 +65,7 @@ public class UsersDAO {
 			pstmt.setString(3, userDTO.getPassword());
 			pstmt.executeUpdate();
 
-			return new UserDTO(userDTO.getName(), userDTO.getRole(), userDTO.getPassword());
+			return new UserDTO(userDTO.getName(), userDTO.getRole(), null);
 		}
 	}
 

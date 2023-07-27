@@ -5,6 +5,7 @@ import com.example.model.validator.UniqueName;
 import com.example.model.validator.UpdateChecks;
 import com.example.model.validator.ValidPassword;
 import com.example.model.validator.ValidRole;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
@@ -39,6 +40,7 @@ public class UserDTO {
 	@NotBlank(message = "{user.role.NotBlank}")
 	@ValidRole(message = "{user.role.ValidRole}")
 	@FormParam("role")
+	@JsonIgnore
 	private String role;
 
 	@NotBlank(message = "{user.password.NotBlank}", groups = CreateChecks.class)
