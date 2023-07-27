@@ -49,6 +49,10 @@ public class UserResources {
 		this.passwordHash = passwordHash;
 		passwordHash.initialize(IdentityStoreConfig.HASH_PARAMS);
 		this.req = req;
+		log.log(Level.INFO, "[user]%s [ip]%s [url]%s".formatted(
+				req.getRemoteUser(),
+				req.getRemoteAddr(),
+				req.getRequestURL().toString()));
 	}
 	
 	@GET
