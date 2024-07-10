@@ -21,13 +21,11 @@ import lombok.extern.java.Log;
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 @Log
 public class ForbiddenExceptionMapper implements ExceptionMapper<ForbiddenException> {
-	public final static String FROM_API = "from_api";
 	private final HttpServletRequest req;
 
 	@Override
 	public Response toResponse(ForbiddenException exception) {
-		System.out.println("ForbiddenExceptionMapper#toResponse");
-		if(exception.getMessage() != null && exception.getMessage().equals(FROM_API)) {
+		if(req.getRequestURL().toString().contains("/api/")) {
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
 		

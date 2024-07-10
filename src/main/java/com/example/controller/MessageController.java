@@ -3,17 +3,12 @@ package com.example.controller;
 import java.sql.SQLException;
 import java.util.logging.Level;
 
-import com.example.model.message.MessageForm;
-import com.example.model.message.MessagesDAO;
-
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.security.PermitAll;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.mvc.Controller;
 import jakarta.mvc.Models;
-import jakarta.mvc.MvcContext;
-import jakarta.mvc.binding.BindingResult;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.GET;
@@ -44,15 +39,12 @@ import lombok.extern.java.Log;
 @Path("/")
 public class MessageController {
 	private final Models models;
-	private final MessagesDAO messagesDAO;
 	private final HttpServletRequest req;
-	private final BindingResult bindingResult;
-	private final MessageForm messageForm;
-	private final MvcContext mvcContext;
 	
 	@PostConstruct
 	public void afterInit() {
-		log.log(Level.INFO, "[user]%s, [ip]%s [url]%s".formatted(
+		log.log(Level.INFO, "[method]%s, [user]%s, [ip]%s [url]%s".formatted(
+				req.getMethod(),
 				req.getRemoteUser(),
 				req.getRemoteAddr(),
 				req.getRequestURL().toString()));
@@ -93,39 +85,6 @@ public class MessageController {
 	@Path("list")
 	public String getMessage() throws SQLException {
 		models.put("req", req);	
-		// models.put("messages", messagesDAO.getAll());
 		return "list.jsp";
 	}
-
-	/*
-	@POST
-	@Path("list")
-	public String postMessage(@Valid @BeanParam MessageDTO mes) throws SQLException {
-		if (bindingResult.isFailed()) {
-			messageForm.getError().addAll(bindingResult.getAllMessages());
-			return "redirect:list";
-		}
-		mes.setMessage(mvcContext.getEncoders().html(getMessage()));
-		
-		mes.setName(req.getRemoteUser());
-		messagesDAO.create(mes);
-		return "redirect:list";
-	}
-
-	@POST
-	@Path("clear")
-	@RolesAllowed("ADMIN")
-	public String clearMessage() throws SQLException {
-		messagesDAO.deleteAll();
-		return "redirect:list";
-	}
-
-	@GET
-	@Path("search")
-	public String getSearch(@QueryParam("keyword") String keyword) throws SQLException {
-		models.put("req", req);	
-		models.put("messages", messagesDAO.search(keyword));
-		return "list.jsp";
-	}
-	*/
 }

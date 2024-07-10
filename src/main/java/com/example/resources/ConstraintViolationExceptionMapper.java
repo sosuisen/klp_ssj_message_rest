@@ -8,7 +8,7 @@ import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 
 /**
- * ConstraintViolationExceptionを引き取って
+ * JAX-RSのConstraintViolationExceptionを引き取って
  * 独自の処理をします。
  */
 @Provider
