@@ -2,6 +2,8 @@
  * REST API helper for Alpine.js
  * This software is provided by Hidekazu Kubota under the BSD License.
  */
+// Each module version should match the versions
+// specified in the dependencies section of your build.gradle file. 
 import axios from './webjars/axios/1.7.2/dist/esm/axios.js';
 import Alpine from './webjars/alpinejs/3.14.1/dist/module.esm.js';
 
@@ -21,20 +23,20 @@ const start = (rootEndpointURL, csrfToken) => {
 	Alpine.start();
 };
 
-const apiRequest = async (method, url, data = null) => {
+const apiRequest = async (method, url, sendJson = null) => {
     try {
-        const json = (await client[method](url, data)).data;
+        const receivedJson = (await client[method](url, sendJson)).data;
 		// For your learning, show the JSON received from the server
-        console.log(json);
-        return json;
+        console.log(receivedJson);
+        return receivedJson;
     } catch (err) {
         return err.response.status;
     }
 };
 
 const get = (url) => apiRequest('get', url);
-const post = (url, formData) => apiRequest('post', url, { formData });
-const put = (url, formData) => apiRequest('put', url, { formData });
+const post = (url, json) => apiRequest('post', url, json);
+const put = (url, json) => apiRequest('put', url, json);
 const del = (url) => apiRequest('delete', url);
 const isError = (res) => typeof res === 'number';
 

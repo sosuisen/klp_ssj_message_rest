@@ -14,16 +14,16 @@
 	<div>${ mvc.encoders.html(req.getRemoteUser()) }${ req.isUserInRole("ADMIN") ? "[管理者]" : "" }さん、こんにちは！
 	</div>
 
-	<form x-data="{ formData: { message: ''} }"
+	<form x-data="{ json: { message: ''} }"
 		@submit.prevent="
-			const res = await api.post('/messages', $data);
+			const res = await api.post('/messages', json);
 			if(api.isError(res)) error = '投稿できませんでした[Error: ' + res + ']';
 			else{
-				formData.message = '';
+				json.message = '';
 	    		messages.push(res);
 	    	}
 	    ">
-		メッセージ：<input type="text" x-model="formData.message">
+		メッセージ：<input type="text" x-model="json.message">
 		<button>送信</button>
 	</form>
 
