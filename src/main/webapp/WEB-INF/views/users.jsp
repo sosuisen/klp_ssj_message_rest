@@ -1,6 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
-<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -19,18 +19,21 @@
 }
 </style>
 </head>
-<body>
-	[<a href="${mvc.basePath}/">ホーム</a>]
-	[<a href="${mvc.basePath}/list">メッセージページ</a>]
-	[<a href="${mvc.basePath}/logout">ログアウト</a>]
+<body x-data="{ error: '', users: [] }"
+	x-init="
+		api.get('/users')
+			.then(res => users = res)
+			.catch(e => error = '一覧を取得できませんでした[Error: ' + res + ']');
+	">
+	[<a href="${mvc.basePath}/">ホーム</a>]	[	<a href="${mvc.basePath}/list">メッセージページ</a>] [	<a href="${mvc.basePath}/logout">ログアウト</a>]
 	<hr>
 	<div style="color: green">
 		<c:forEach var="msg" items="${userForm.message}">
 			<c:choose>
-				<c:when test="${msg == 'succeed_create'}">ユーザを作成しました。</c:when> 
-				<c:when test="${msg == 'succeed_update'}">ユーザを更新しました。</c:when> 
+				<c:when test="${msg == 'succeed_create'}">ユーザを作成しました。</c:when>
+				<c:when test="${msg == 'succeed_update'}">ユーザを更新しました。</c:when>
 				<c:when test="${msg == 'succeed_delete'}">ユーザを削除しました。</c:when>
-				<c:otherwise>${msg}</c:otherwise> 
+				<c:otherwise>${msg}</c:otherwise>
 			</c:choose>
 			<br />
 		</c:forEach>
@@ -39,16 +42,26 @@
 		<c:forEach var="err" items="${userForm.error}">
 			${mvc.encoders.html(err)}<br />
 		</c:forEach>
-	</div>	
-	
+	</div>
+
 	<h1>新規ユーザ追加</h1>
 
-	<form class="row_create" action="${mvc.basePath}/users" method="POST"　autocomplete="off">
+	<form class="row_create" autocomplete="off"
+		x-data="{ json: { name: '', role: '', password: ''} }"
+	    @submit.prevent="
+	                api.post('/users', json)
+	                	.then(res => {
+	                		json = { name: '', role: '', password: ''};
+	                		// 成功表示を追加
+	                		users.push(res);
+	                	})
+	                	// どうやって複数のエラーを表示するか。JSONでエラー集合を返すべきだね。
+	                	.catch(e => console.error(e));
+		">	                		
 		<span>ユーザ名</span> <span>ロール</span> <span>パスワード</span> <span></span>
-		<input type="text" name="name" value="${mvc.encoders.js(userForm.prevUser.name)}">
-		<input type="text" name="role"  value="${mvc.encoders.js(userForm.prevUser.role)}">		
-		<input type="password" name="password" value="">
-		<input type="hidden" name="${mvc.csrf.name}" value="${mvc.csrf.token}"/>		
+		<input type="text" x-model="json.name">
+		<input type="text" name="json.role">
+	    <input type="password" x-model="json.password">
 		<button>追加</button>
 	</form>
 	<hr>
@@ -59,16 +72,35 @@
 			<div>ロール</div>
 			<div>パスワード</div>
 		</div>
+		<template x-for="user in users" :key="user.name" 
+			x-data="{
+				updateUser: (json) => {
+					api.put('/users/' + user.name + '/put', json)
+						.then(res => {
+							// 成功メッセージ表示
+						})
+						.catch(e => console.error(e));
+				},
+				deleteUser: (json) => {
+					api.delete('/users/' + user.name + '/delete, json)
+						.then(res => {
+							// 成功メッセージ表示
+						})
+						.catch(e => console.error(e));
+				},
+			}">
+			<div class="row">               		
+				<input type="text" x-model="json.role">
+				<input type="password" x-model="json.password">
+				<button @click="updateUser(user)">更新</button>
+				<button @click="deleteUser(user)">削除</button>
+			</div>
+		</template>
+	</div>
 
-		<c:forEach var="user" items="${users}">
-			<form class="row" method="POST"　autocomplete="off">
-				<input type="hidden" name="name" value="${user.name}"> <span>${mvc.encoders.html(user.name)}</span>
-				<input type="text" name="role" value="${mvc.encoders.js(user.role)}">
-				<input type="password" name="password" value="">
-				<input type="hidden" name="${mvc.csrf.name}" value="${mvc.csrf.token}"/>
-				<button formaction="${mvc.basePath}/user_update">更新</button>
-				<button formaction="${mvc.basePath}/user_delete">削除</button>
-			</form>
-		</c:forEach>
+	<script type="module">
+		import api from '${mvc.basePath}/../api.js';
+		api.start('${mvc.basePath}/api', '${mvc.csrf.token}');
+	</script>
 </body>
 </html>
