@@ -61,28 +61,11 @@
 		</template>
 	</div>
 
-	<script defer
-		src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-	<script>
-    	const api = axios.create({
-        	            baseURL: '${mvc.basePath}/api',
-        	            headers: {
-        	            	'Content-Type': 'application/json',
-            	            'X-CSRF-TOKEN': '${mvc.csrf.token}'
-        	            },
-    	});
-    	const apiRequest = async (method, url, data = null) => {
-    	    try {
-    	        return (await api[method](url, data)).data;
-    	    } catch (err) {
-    	        return err.response.status;
-    	    }
-    	};
-    	const apiGet = (url) => apiRequest('get', url);
-    	const apiPost = (url, { formData }) => apiRequest('post', url, formData);
-    	const apiDelete = (url) => apiRequest('delete', url);
-    	const isError = (res) => typeof res === 'number';
-	</script>
+<!-- <script defer
+		src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script> -->
+	<script src="webjars/alpinejs/3.14.1/dist/cdn.min.js"></script>
+	<script src="webjars/axios/1.7.2/dist/axios.min.js"></script>
+	<script src="${mvc.basePath}/../app.css"></script>
 </body>
 </html>
