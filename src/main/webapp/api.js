@@ -1,22 +1,49 @@
-const api = axios.create({
-	            baseURL: '${mvc.basePath}/api',
-	            headers: {
-	            	'Content-Type': 'application/json',
-    	            'X-CSRF-TOKEN': '${mvc.csrf.token}'
-	            },
-});
+/* 
+ * REST API helper for Alpine.js
+ * This software is provided by Hidekazu Kubota under the BSD License.
+ */
+import axios from './webjars/axios/1.7.2/dist/esm/axios.js';
+import Alpine from './webjars/alpinejs/3.14.1/dist/module.esm.js';
+
+let client = null;
+
+const start = (rootEndpointURL, csrfToken) => {
+    client = axios.create({
+        baseURL: rootEndpointURL,
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken
+        },
+    });
+	delete api.start;    
+    window.api = api;
+    window.Alpine = Alpine;
+	Alpine.start();
+};
+
 const apiRequest = async (method, url, data = null) => {
     try {
-		const json = (await api[method](url, data)).data;
-		// 参考のため、受信したJSONをコンソールに表示
-		console.log(json);
-        return json; 
+        const json = (await client[method](url, data)).data;
+		// For your learning, show the JSON received from the server
+        console.log(json);
+        return json;
     } catch (err) {
         return err.response.status;
     }
 };
-const apiGet = (url) => apiRequest('get', url);
-const apiPost = (url, { formData }) => apiRequest('post', url, formData);
-const apiPut = (url, { formData }) => apiRequest('put', url, formData);
-const apiDelete = (url) => apiRequest('delete', url);
+
+const get = (url) => apiRequest('get', url);
+const post = (url, formData) => apiRequest('post', url, { formData });
+const put = (url, formData) => apiRequest('put', url, { formData });
+const del = (url) => apiRequest('delete', url);
 const isError = (res) => typeof res === 'number';
+
+const api = {
+    start,
+    get,
+    post,
+    put,
+    delete: del,
+    isError
+};
+export default api;

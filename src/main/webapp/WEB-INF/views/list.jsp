@@ -16,8 +16,8 @@
 
 	<form x-data="{ formData: { message: ''} }"
 		@submit.prevent="
-			const res = await apiPost('/messages', $data);
-			if(isError(res)) error = '投稿できませんでした[Error: ' + res + ']';
+			const res = await api.post('/messages', $data);
+			if(api.isError(res)) error = '投稿できませんでした[Error: ' + res + ']';
 			else{
 				formData.message = '';
 	    		messages.push(res);
@@ -29,8 +29,8 @@
 
 	<form x-data="{ keyword: '' }"
 		@submit.prevent="
-			const res = await apiGet('/messages?keyword=' + keyword);
-			if(isError(res)) error = '検索できませんでした[Error: ' + res + ']';
+			const res = await api.get('/messages?keyword=' + keyword);
+			if(api.isError(res)) error = '検索できませんでした[Error: ' + res + ']';
 			else messages = res;
 		">
 		検索語：<input type="text" x-model="keyword">
@@ -39,8 +39,8 @@
 
 	<form
 		@submit.prevent="
-		    const res = await apiDelete('/messages');
-			if(isError(res)) error = '削除できませんでした[Error: ' + res + ']';
+		    const res = await api.delete('/messages');
+			if(api.isError(res)) error = '削除できませんでした[Error: ' + res + ']';
 		    else messages = [];
 		  ">
 		<button>Clear</button>
@@ -50,8 +50,8 @@
 	<h1>メッセージ一覧</h1>
 	<div
 		x-init="
-			const res = await apiGet('/messages');
-			if(isError(res)) error = '一覧を取得できませんでした[Error: ' + res + ']';
+			const res = await api.get('/messages');
+			if(api.isError(res)) error = '一覧を取得できませんでした[Error: ' + res + ']';
 			else messages = res;
 		">
 		<template x-for="mes in messages">
@@ -60,12 +60,9 @@
 			</div>
 		</template>
 	</div>
-
-<!-- <script defer
-		src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script> -->
-<!-- <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script> -->
-	<script src="webjars/alpinejs/3.14.1/dist/cdn.min.js"></script>
-	<script src="webjars/axios/1.7.2/dist/axios.min.js"></script>
-	<script src="${mvc.basePath}/../app.css"></script>
+	<script type="module">
+		import api from '${mvc.basePath}/../api.js';
+		api.start('${mvc.basePath}/api', '${mvc.csrf.token}');
+	</script>
 </body>
 </html>
