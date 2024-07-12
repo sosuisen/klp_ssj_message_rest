@@ -28,11 +28,11 @@ import jakarta.validation.groups.ConvertGroup;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.FormParam;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -90,19 +90,18 @@ public class Users {
 		return usersDAO.create(user);		
 	}
 
-	// DELETE /api/users/{id}
+	// DELETE /api/users/{name}
 	@DELETE
-	@Path("{id}")
-	public String deleteUser(@FormParam("name") String name) throws SQLException {
+	@Path("{name}")
+	public void deleteUser(@PathParam("name") String name) throws SQLException {
 		checkCsrf();			
 		usersDAO.delete(name);
-		return "redirect:users";
 	}
 
-	// PUT /api/users/{id}
+	// PUT /api/users/{name}
 	@PUT
-	@Path("{id}")
-	public Response updateUser(@Valid UserDTO user) throws SQLException {
+	@Path("{name}")
+	public Response updateUser(@PathParam("name") String name, @Valid UserDTO user) throws SQLException {
 		checkCsrf();
 		if (!user.getPassword().isEmpty()) {
 			var pattern = java.util.regex.Pattern.compile(UserDTO.PASSWORD_REGEX);
@@ -124,7 +123,7 @@ public class Users {
 			user.setPassword(hash);
 
 		}		
-		var updatedUser = usersDAO.update(user);
+		var updatedUser = usersDAO.update(name, user);
 		return Response.ok(updatedUser).build();
 	}
 

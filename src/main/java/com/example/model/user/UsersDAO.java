@@ -86,13 +86,13 @@ public class UsersDAO {
 		}
 	}
 
-	public UserDTO update(UserDTO userDTO) throws SQLException {
+	public UserDTO update(String name, UserDTO userDTO) throws SQLException {
 		try (
 				Connection conn = ds.getConnection()) {
 			if (userDTO.getPassword().equals(""))
 				try (PreparedStatement pstmt = conn.prepareStatement("UPDATE users SET role=? where name=?")) {
 					pstmt.setString(1, userDTO.getRole());
-					pstmt.setString(2, userDTO.getName());
+					pstmt.setString(2, name);
 					pstmt.executeUpdate();
 
 				}
@@ -101,10 +101,10 @@ public class UsersDAO {
 						.prepareStatement("UPDATE users SET role=?,password=? where name=?")) {
 					pstmt.setString(1, userDTO.getRole());
 					pstmt.setString(2, userDTO.getPassword());
-					pstmt.setString(3, userDTO.getName());
+					pstmt.setString(3, name);
 					pstmt.executeUpdate();
 				}
-			var updatedUser = get(userDTO.getName());
+			var updatedUser = get(name);
 			updatedUser.setPassword("");
 			return updatedUser;
 		}

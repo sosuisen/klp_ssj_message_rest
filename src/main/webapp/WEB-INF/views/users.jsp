@@ -7,17 +7,6 @@
 <meta charset="UTF-8">
 <link href="${mvc.basePath}/../app.css" rel="stylesheet">
 <title>メッセージアプリ：ユーザ管理</title>
-<style>
-.row_create {
-	display: grid;
-	grid-template-columns: 100px 100px 100px 50px;
-}
-
-.row {
-	display: grid;
-	grid-template-columns: 100px 100px 100px 50px 50px;
-}
-</style>
 </head>
 <body x-data="{ success: '', error: '', constraintErrors: [], users: [] }"
 	x-init="
@@ -25,12 +14,12 @@
 			.then(res => users = res)
 			.catch(e => error = '一覧を取得できませんでした[Error: ' + res + ']'); 
 	">
-	[<a href="${mvc.basePath}/">ホーム</a>]	[	<a href="${mvc.basePath}/list">メッセージページ</a>] [	<a href="${mvc.basePath}/logout">ログアウト</a>]
+	[<a href="${mvc.basePath}/">ホーム</a>][<a href="${mvc.basePath}/list">メッセージページ</a>][<a href="${mvc.basePath}/logout">ログアウト</a>]
 	<hr>
 	<div style="color: green">
-		<span x-text="success"></span>
+		<span x-text="success" @click.outside="success = ''"></span>
 	</div>
-	<div style="color: red">
+	<div style="color: red" @click.outside="error = ''; errors = []">
 		<span x-text="error"></span>
 		<template x-for="err in constraintErrors">
 			<div x-text="err"></div>
@@ -69,27 +58,41 @@
 		</div>
 		<template x-for="user in users" :key="user.name" 
 			x-data="{
-				updateUser: (json) => {
-					api.put('/users/' + user.name + '/put', json)
+				updateUser: (name, json) => {
+					api.put('/users/' + name, json)
 						.then(res => {
-							// 成功メッセージ表示
+							success = 'ユーザを更新しました。';
+							json.password = '';
 						})
-						.catch(e => console.error(e));
+						.catch(e => {
+	                		if(e.response.data?.errors != null) constraintErrors = e.response.data.errors;
+	                		else error = 'ユーザの更新に失敗しました[Error: ' + e.response.status + ']'; 
+	                	});
 				},
-				deleteUser: (json) => {
-					api.delete('/users/' + user.name + '/delete', json)
+				deleteUser: (name) => {
+					api.delete('/users/' + name)
 						.then(res => {
-							// 成功メッセージ表示
+							success = 'ユーザを削除しました。';
+							users = users.filter(u => u.name != name);
 						})
-						.catch(e => console.error(e));
+						.catch(e => {
+	                		if(e.response.data?.errors != null) constraintErrors = e.response.data.errors;
+	                		else error = 'ユーザの削除に失敗しました[Error: ' + e.response.status + ']'; 
+	                	});
 				},
 			}">
-			<div class="row">
-				<span x-text="user.name"></span>               		
-				<input type="text" x-model="user.role">
-				<input type="password" x-model="user.password">
-				<button @click="updateUser(user)">更新</button>
-				<button @click="deleteUser(user)">削除</button>
+			<div class="row"
+					x-data="{ name: user.name, 
+							row: {
+								name: user.name, 
+                				role: user.role,
+                				password: user.password
+							}}">
+				<span x-text="name"></span>
+				<input type="text" x-model="row.role">
+				<input type="password" x-model="row.password">
+				<button @click="updateUser(name, row)">更新</button>
+				<button @click="deleteUser(name)">削除</button>
 			</div>
 		</template>
 	</div>
