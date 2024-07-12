@@ -4,7 +4,6 @@ import com.example.model.validator.CreateChecks;
 import com.example.model.validator.UniqueName;
 import com.example.model.validator.ValidRole;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -15,25 +14,19 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class UserDTO {
-	public static final int MIN_NAME_LENGTH = 3;
-	public static final int MAX_NAME_LENGTH = 30;
-	public static final String PASSWORD_REGEX = "^[0-9a-zA-Z_\\-#\\^\\$%&@\\+\\*\\?]+$";
-	public static final int MIN_PASSWORD_LENGTH = 8;
-	public static final int MAX_PASSWORD_LENGTH = 16;
-
-	@Pattern(regexp = "[a-zA-Z0-9]+", message = "{user.name.Pattern}", groups = CreateChecks.class)
-	@NotBlank(message = "{user.name.NotBlank}", groups = CreateChecks.class)
-	@Size(min = MIN_NAME_LENGTH, max = MAX_NAME_LENGTH, message = "{user.name.Size}", groups = CreateChecks.class)
+	// @Sizeと@Patternで網羅できるため@NotBlankは不要
+	@Size(min = 3, max = 30, message = "{user.name.Size}", groups = CreateChecks.class)
+	@Pattern(regexp = "^[a-zA-Z0-9]*$", message = "{user.name.Pattern}", groups = CreateChecks.class)
 	@UniqueName(message = "{user.name.UniqueName}", groups = CreateChecks.class)
 	private String name;
 	
-	@NotBlank(message = "{user.role.NotBlank}")
+	// @ValidRoleで対応できるため@NotBlankは不要
 	@ValidRole(message = "{user.role.ValidRole}")
 	private String role;
 	
-	@NotBlank(message = "{user.password.NotBlank}", groups = CreateChecks.class)
-	@Size(min = MIN_PASSWORD_LENGTH, max = MAX_PASSWORD_LENGTH, message = "{user.password.Size}", groups = CreateChecks.class)
-	@Pattern(regexp = PASSWORD_REGEX, message = "{user.password.Pattern}", groups = CreateChecks.class)
+	// @Sizeと@Patternで網羅できるため@NotBlankは不要
+	// 文字数の制約はPOSTのとき（つまりCreateChecksグループ指定のとき）のみ
+	@Size(min = 8, max = 16, message = "{user.password.Size}", groups = CreateChecks.class)
+	@Pattern(regexp = "^[0-9a-zA-Z_\\-#\\^\\$%&@\\+\\*\\?]*$", message = "{user.password.Pattern}")
 	private String password;
 }
-

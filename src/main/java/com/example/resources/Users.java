@@ -1,27 +1,20 @@
 package com.example.resources;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
 import java.util.logging.Level;
 
 import com.example.auth.IdentityStoreConfig;
 import com.example.model.user.UserDTO;
 import com.example.model.user.UsersDAO;
 import com.example.model.validator.CreateChecks;
-import com.example.resources.ConstraintViolationExceptionMapper.ErrorResponse;
 
 import jakarta.annotation.PostConstruct;
-import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.mvc.MvcContext;
 import jakarta.security.enterprise.identitystore.Pbkdf2PasswordHash;
-import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.groups.ConvertGroup;
@@ -35,7 +28,6 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
@@ -47,14 +39,13 @@ import lombok.extern.java.Log;
 @Consumes(MediaType.APPLICATION_JSON)
 @NoArgsConstructor(force = true)
 @RequiredArgsConstructor(onConstructor_ = @Inject)
-@PermitAll
+@RolesAllowed("ADMIN")
 @Log
 @Path("/api/users")
 public class Users {
 	private final UsersDAO usersDAO;
 	private final HttpServletRequest req;
 	private final MvcContext mvcContext;
-	private final ServletContext servletContext;
 	private final Pbkdf2PasswordHash passwordHash;
 
 	@PostConstruct
@@ -90,53 +81,23 @@ public class Users {
 		return usersDAO.create(user);		
 	}
 
+	// PUT /api/users/{name}
+	@PUT
+	@Path("{name}")
+	public UserDTO updateUser(@PathParam("name") String name, @Valid UserDTO user) throws SQLException {
+		checkCsrf();
+		if (!user.getPassword().isEmpty()) {
+			var hash = passwordHash.generate(user.getPassword().toCharArray());
+			user.setPassword(hash);
+		}		
+		return usersDAO.update(name, user);
+	}
+
 	// DELETE /api/users/{name}
 	@DELETE
 	@Path("{name}")
 	public void deleteUser(@PathParam("name") String name) throws SQLException {
 		checkCsrf();			
 		usersDAO.delete(name);
-	}
-
-	// PUT /api/users/{name}
-	@PUT
-	@Path("{name}")
-	public Response updateUser(@PathParam("name") String name, @Valid UserDTO user) throws SQLException {
-		checkCsrf();
-		if (!user.getPassword().isEmpty()) {
-			var pattern = java.util.regex.Pattern.compile(UserDTO.PASSWORD_REGEX);
-			if (!pattern.matcher(user.getPassword()).matches()) {
-				var response = new ErrorResponse("error", List.of(getValidationMessage("user.password.Pattern")));
-				// パラメータの検証エラーの場合、400 Bad Request を返すのが一般的です。
-				return Response.status(Response.Status.BAD_REQUEST).entity(response).build();
-			}
-
-			if (!(user.getPassword().length() >= UserDTO.MIN_PASSWORD_LENGTH
-					&& user.getPassword().length() <= UserDTO.MAX_PASSWORD_LENGTH)) {
-				var response = new ErrorResponse("error", 
-						List.of(getValidationMessage("user.password.Size")
-								.replace("{min}", String.valueOf(UserDTO.MIN_PASSWORD_LENGTH))
-								.replace("{max}", String.valueOf(UserDTO.MAX_PASSWORD_LENGTH))));
-				return Response.status(Response.Status.BAD_REQUEST).entity(response).build();
-			}
-			var hash = passwordHash.generate(user.getPassword().toCharArray());
-			user.setPassword(hash);
-
-		}		
-		var updatedUser = usersDAO.update(name, user);
-		return Response.ok(updatedUser).build();
-	}
-
-	private String getValidationMessage(String key) {
-		var properties = new Properties();
-		try (InputStream resourceStream = servletContext
-				.getResourceAsStream("/WEB-INF/classes/ValidationMessages.properties");) {
-			properties.load(resourceStream);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		String message = properties.getProperty(key);
-		var utf8Message = new String(message.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
-		return utf8Message;
 	}
 }

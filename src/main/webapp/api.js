@@ -1,6 +1,6 @@
 /* 
  * REST API helper for Alpine.js
- * This software is provided by Hidekazu Kubota under the BSD License.
+ * provided by Hidekazu Kubota under the BSD License.
  */
 
 // Each module version should match the versions
