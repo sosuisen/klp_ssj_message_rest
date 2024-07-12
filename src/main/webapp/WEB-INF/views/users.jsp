@@ -19,29 +19,22 @@
 }
 </style>
 </head>
-<body x-data="{ error: '', users: [] }"
+<body x-data="{ success: '', error: '', constraintErrors: [], users: [] }"
 	x-init="
 		api.get('/users')
 			.then(res => users = res)
-			.catch(e => error = '一覧を取得できませんでした[Error: ' + res + ']');
+			.catch(e => error = '一覧を取得できませんでした[Error: ' + res + ']'); 
 	">
 	[<a href="${mvc.basePath}/">ホーム</a>]	[	<a href="${mvc.basePath}/list">メッセージページ</a>] [	<a href="${mvc.basePath}/logout">ログアウト</a>]
 	<hr>
 	<div style="color: green">
-		<c:forEach var="msg" items="${userForm.message}">
-			<c:choose>
-				<c:when test="${msg == 'succeed_create'}">ユーザを作成しました。</c:when>
-				<c:when test="${msg == 'succeed_update'}">ユーザを更新しました。</c:when>
-				<c:when test="${msg == 'succeed_delete'}">ユーザを削除しました。</c:when>
-				<c:otherwise>${msg}</c:otherwise>
-			</c:choose>
-			<br />
-		</c:forEach>
+		<span x-text="success"></span>
 	</div>
 	<div style="color: red">
-		<c:forEach var="err" items="${userForm.error}">
-			${mvc.encoders.html(err)}<br />
-		</c:forEach>
+		<span x-text="error"></span>
+		<template x-for="err in constraintErrors">
+			<div x-text="err"></div>
+		</template> 
 	</div>
 
 	<h1>新規ユーザ追加</h1>
@@ -51,16 +44,18 @@
 	    @submit.prevent="
 	                api.post('/users', json)
 	                	.then(res => {
-	                		json = { name: '', role: '', password: ''};
-	                		// 成功表示を追加
+	                		success = 'ユーザを作成しました。';
 	                		users.push(res);
+	                		json = { name: '', role: '', password: ''};	                		
 	                	})
-	                	// どうやって複数のエラーを表示するか。JSONでエラー集合を返すべきだね。
-	                	.catch(e => console.error(e));
+	                	.catch(e => {
+	                		if(e.response.data?.errors != null) constraintErrors = e.response.data.errors;
+	                		else error = 'ユーザの作成に失敗しました[Error: ' + e.response.status + ']'; 
+	                	});
 		">	                		
 		<span>ユーザ名</span> <span>ロール</span> <span>パスワード</span> <span></span>
 		<input type="text" x-model="json.name">
-		<input type="text" name="json.role">
+		<input type="text" x-model="json.role">
 	    <input type="password" x-model="json.password">
 		<button>追加</button>
 	</form>
@@ -82,16 +77,17 @@
 						.catch(e => console.error(e));
 				},
 				deleteUser: (json) => {
-					api.delete('/users/' + user.name + '/delete, json)
+					api.delete('/users/' + user.name + '/delete', json)
 						.then(res => {
 							// 成功メッセージ表示
 						})
 						.catch(e => console.error(e));
 				},
 			}">
-			<div class="row">               		
-				<input type="text" x-model="json.role">
-				<input type="password" x-model="json.password">
+			<div class="row">
+				<span x-text="user.name"></span>               		
+				<input type="text" x-model="user.role">
+				<input type="password" x-model="user.password">
 				<button @click="updateUser(user)">更新</button>
 				<button @click="deleteUser(user)">削除</button>
 			</div>

@@ -25,8 +25,9 @@ const start = (rootEndpointURL, csrfToken) => {
 };
 
 const apiRequest = async (method, url, sendJson = null) => {
+	// For your learning, log sent and received JSON 
+	if (sendJson) console.log(sendJson);		
 	const receivedJson = (await client[method](url, sendJson)).data;
-	// For your learning, show the JSON received from the server
 	console.log(receivedJson);
 	return receivedJson;
 };

@@ -32,6 +32,7 @@ dependencies {
 
 	/*
 	 * WebJars
+	 * GradleタスクのbuildDependentsを実行すること
 	 */
 	implementation 'org.webjars.npm:axios:1.7.2'
 	implementation 'org.webjars.npm:alpinejs:3.14.1'

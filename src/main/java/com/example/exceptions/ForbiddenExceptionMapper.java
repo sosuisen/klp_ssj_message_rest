@@ -1,4 +1,4 @@
-package com.example.controller;
+package com.example.exceptions;
 
 import java.net.URI;
 import java.util.logging.Level;

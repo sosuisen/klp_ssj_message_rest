@@ -23,8 +23,8 @@
 		@submit.prevent="
 			api.post('/messages', json)
 				.then(res => {
-					json.message = '';
 	    			messages.push(res);
+					json.message = '';	    			
 				})
 				.catch(e => error = '投稿できませんでした[Error: ' + e.response.status + ']');
 	    ">

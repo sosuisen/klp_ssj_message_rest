@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 
 import javax.sql.DataSource;
@@ -48,15 +49,23 @@ public class UsersDAO {
 		return null;
 	}
 
-	public void create(UserDTO userDTO) throws SQLException {
+	public UserDTO create(UserDTO userDTO) throws SQLException {
 		try (
 				Connection conn = ds.getConnection();
 				PreparedStatement pstmt = conn
-						.prepareStatement("INSERT INTO users VALUES(?, ?, ?)")) {
+						.prepareStatement("INSERT INTO users VALUES(?, ?, ?)",
+						Statement.RETURN_GENERATED_KEYS)) {
 			pstmt.setString(1, userDTO.getName());
 			pstmt.setString(2, userDTO.getRole());
 			pstmt.setString(3, userDTO.getPassword());
 			pstmt.executeUpdate();
+			
+			// AUTOINCREMENTで生成された id を取得します。
+			ResultSet rs = pstmt.getGeneratedKeys();
+			rs.next();
+			userDTO.setName(rs.getString(1));
+			userDTO.setPassword("");
+			return userDTO;
 		}
 	}
 
@@ -77,7 +86,7 @@ public class UsersDAO {
 		}
 	}
 
-	public void update(UserDTO userDTO) throws SQLException {
+	public UserDTO update(UserDTO userDTO) throws SQLException {
 		try (
 				Connection conn = ds.getConnection()) {
 			if (userDTO.getPassword().equals(""))
@@ -95,6 +104,9 @@ public class UsersDAO {
 					pstmt.setString(3, userDTO.getName());
 					pstmt.executeUpdate();
 				}
+			var updatedUser = get(userDTO.getName());
+			updatedUser.setPassword("");
+			return updatedUser;
 		}
 	}
 
