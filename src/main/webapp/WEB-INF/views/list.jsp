@@ -19,7 +19,7 @@
 
 	<form x-data="{ param: { message: ''} }"
 		@submit.prevent="$post('/messages', { param, error: '投稿できませんでした' })
-			.then(res => { if (res.status==201) messages.push(res.data), json.message = '' })">
+			.then(res => { if (res.status==201) messages.push(res.data), param.message = '' })">
 		メッセージ：<input type="text" x-model="param.message">
 		<button>送信</button>
 	</form>
