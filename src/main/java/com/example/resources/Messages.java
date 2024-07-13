@@ -26,6 +26,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
@@ -67,6 +68,7 @@ public class Messages {
 	 * 以下は要認証（web.xmlで設定）
 	 */
 	// GET /api/messages
+	// レスポンスステータスコードが200の場合、戻り値はデータオブジェクトそのままでよい
 	@GET
 	public ArrayList<MessageDTO> getMessages(@QueryParam("keyword") String keyword) throws SQLException {
 		checkCsrf();		
@@ -79,18 +81,24 @@ public class Messages {
 	}	
 
 	// POST /api/messages
+	// 200以外を返したい場合、戻り値はResponse型
 	@POST
-	public MessageDTO postMessage(@Valid @ConvertGroup(to = CreateChecks.class) MessageDTO mes) throws SQLException {
+	public Response postMessage(@Valid @ConvertGroup(to = CreateChecks.class) MessageDTO mes) throws SQLException {
 		checkCsrf();
 		mes.setName(req.getRemoteUser());
-		return messagesDAO.create(mes);
+		
+
+		return Response.status(201)
+						.entity(messagesDAO.create(mes))
+						.build();
 	}
 
 	// DELETE /api/messages
 	@DELETE
 	@RolesAllowed("ADMIN")
-	public void deleteMessages() throws SQLException {
+	public Response deleteMessages() throws SQLException {
 		checkCsrf();		
 		messagesDAO.deleteAll();
+		return Response.status(204).build();
 	}
 }

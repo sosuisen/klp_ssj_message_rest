@@ -9,52 +9,36 @@
 <title>メッセージアプリ：ユーザ管理</title>
 </head>
 <body
-	x-data="{ users: [], success: '', errors: [],
-		showErr(e, mes) {
-			if(e.response?.data?.errors) this.errors = e.response.data.errors; // 制約条件エラー
-			else if(e.response) this.errors.push(mes + ': ' + e.response.status); // その他のサーバエラー
-			else this.errors.push('処理できませんでした: ' + e.message); // クライアントエラー
-        },
-		resetErr(){ this.errors = [] }
-    }"
-	x-init="
-		api.get('/users')
-			.then(res => users = res)
-			.catch(e => showErr(e, '一覧を取得できませんでした'));
-	">
+	x-data="{ users: []	}"
+	x-init="$get('/users', { error: '一覧を取得できませんでした' }).then(res => if(res.status==200) users = res)">
+
 	[<a href="${mvc.basePath}/">ホーム</a>][<a href="${mvc.basePath}/list">メッセージページ</a>][<a href="${mvc.basePath}/logout">ログアウト</a>]
 	<hr>
 
-	<div style="color: green" x-show="success">
-		<span x-text="success" @click.outside="success = ''"></span>
+	<div style="color: green" x-show="$store.successes.length > 0" @click.outside="$store.successes.length=0">
+		<template x-for="success in $store.successes">
+			<div x-text="success"></div>
+		</template> 
 	</div>
 
-	<div style="color: red" x-show="errors.length > 0">
-		<template x-for="err in errors">
-			<div x-text="err"></div>
-		</template>
+	<div style="color: red" x-show="$store.errors.length > 0">
+		<template x-for="error in $store.errors">
+			<div x-text="error"></div>
+		</template> 
 	</div>
 
 	<h1>新規ユーザ追加</h1>
 
-	<form class="row_create" autocomplete="off"
-		x-data="{ json: { name: '', role: '', password: ''} }"
-		@submit.prevent="
-	     			resetErr();
-	                api.post('/users', json)
-	                	.then(res => {
-	                		success = 'ユーザを作成しました。';
-	                		users.push(res);
-	                		json = { name: '', role: '', password: ''};	                		
-	                	})
-	                	.catch(e => showErr(e, 'ユーザを作成できませんでした'));
-		">
-		<span>ユーザ名</span> <span>ロール</span> <span>パスワード</span> <span></span> <input
-			type="text" x-model="json.name"> <input type="text"
-			x-model="json.role"> <input type="password"
-			x-model="json.password">
+	<div class="row_create" autocomplete="off"
+		x-data="{ param: { name: '', role: '', password: ''} }"
+		@submit.prevent="$post('/users', { param, success: 'ユーザを作成しました', error: 'ユーザを作成できませんでした' })
+			.then(res => { if (res.status==201) users.push(res), json = { name: '', role: '', password: ''} })">
+		<span>ユーザ名</span> <span>ロール</span> <span>パスワード</span> <span></span>
+		<input type="text" x-model="param.name">
+		<input type="text" x-model="param.role">
+		<input type="password" x-model="param.password">
 		<button>追加</button>
-	</form>
+	</div>
 	<hr>
 	<h1>ユーザ一覧</h1>
 	<div>
@@ -63,41 +47,23 @@
 			<div>ロール</div>
 			<div>パスワード</div>
 		</div>
-		<template x-for="user in users" :key="user.name"
-			x-data="{
-				updateUser: (name, json) => {
-					resetErr();
-					api.put('/users/' + name, json)
-						.then(res => {
-							success = 'ユーザを更新しました。';
-							json.password = '';
-						})
-						.catch(e => showErr(e, 'ユーザを更新できませんでした'));
-				},
-				deleteUser: (name) => {
-				    resetErr();
-					api.delete('/users/' + name)
-						.then(res => {
-							success = 'ユーザを削除しました。';
-							users = users.filter(u => u.name != name);
-						})
-						.catch(e => showErr(e, 'ユーザを削除できませんでした'));
-				},
-			}">
+		<template x-for="user in users" :key="user.name">
 			<div class="row"
-				x-data="{ name: user.name, row: { role: user.role, password: user.password }}">
+				x-data="{ name: user.name, param: { role: user.role, password: user.password }}">
 				<span x-text="name"></span>
-				<input type="text" x-model="row.role">
-				<input type="password" x-model="row.password">
-				<button @click="updateUser(name, row)">更新</button>
-				<button @click="deleteUser(name)">削除</button>
+				<input type="text" x-model="param.role">
+				<input type="password" x-model="param.password">
+				<button @click="$put('/users/' + name, { param, success: '更新しました', error: '更新できませんでした' })
+					.then(() => { if (res.status==200) row.password = '' })">更新</button>
+				<button @click="$delete('/users/' + name, { success: '削除しました。', error: '削除できませんでした' })
+					.then(() => { if (res.status==204) users = users.filter(u => u.name != name) })">削除</button>
 			</div>
 		</template>
 	</div>
 
 	<script type="module">
-		import api from '${mvc.basePath}/../api.js';
-		api.start('${mvc.basePath}/api', '${mvc.csrf.token}');
+		import rest from '${mvc.basePath}/../rest.js';
+		rest.start('${mvc.basePath}/api', '${mvc.csrf.token}');
 	</script>
 </body>
 </html>

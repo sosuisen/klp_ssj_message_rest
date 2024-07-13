@@ -9,69 +9,42 @@
 <title>メッセージアプリ：メッセージ</title>
 </head>
 <body
-	x-data="{ messages: [], success: '', errors: [],
-		showErr(e, mes) {
-			if(e.response?.data?.errors) this.errors = e.response.data.errors; // 制約条件エラー
-			else if(e.response) this.errors.push(mes + ': ' + e.response.status); // その他のサーバエラー
-			else this.errors.push('処理できませんでした: ' + e.message); // クライアントエラー
-        },
-		resetErr(){ this.errors = [] }
-	}"
-	x-init="
-		api.get('/messages')
-			.then(res => messages = res)
-			.catch(e => errors.push('一覧を取得できませんでした[Error: ' + res + ']'));
-	">
+	x-data="{ messages: [] }"
+	x-init="$get('/messages', { error: '一覧を取得できませんでした' }).then(res => { if (res.status==200) messages = res.data })">
+
 	[<a href="${mvc.basePath}/">ホーム</a>][<a href="${mvc.basePath}/users">ユーザ管理</a>][<a href="${mvc.basePath}/logout">ログアウト</a>]
 	<hr>
 	<div>${ mvc.encoders.html(req.getRemoteUser()) }${ req.isUserInRole("ADMIN") ? "[管理者]" : "" }さん、こんにちは！
 	</div>
 
-	<form x-data="{ json: { message: ''} }"
-		@submit.prevent="
-			resetErr();
-			api.post('/messages', json)
-				.then(res => {
-	    			messages.push(res);
-					json.message = '';	    			
-				})
-				.catch(e => showErr(e, '投稿できませんでした'));
-	    ">
-		メッセージ：<input type="text" x-model="json.message">
+	<form x-data="{ param: { message: ''} }"
+		@submit.prevent="$post('/messages', { param, error: '投稿できませんでした' })
+			.then(res => { if (res.status==201) messages.push(res.data), json.message = '' })">
+		メッセージ：<input type="text" x-model="param.message">
 		<button>送信</button>
 	</form>
 
-	<form x-data="{ keyword: '' }"
-		@submit.prevent="
-		    resetErr();
-			api.get('/messages?keyword=' + keyword)
-				.then(res => messages = res)
-				.catch(e => showErr(e, '検索できませんでした'));
-		">
+	<div x-data="{ keyword: '' }"
+		@submit.prevent="$get('/messages?keyword=' + keyword, { error: '検索できませんでした' })
+			.then(res => { if (res.status==200) messages = res.data })">
 		検索語：<input type="text" x-model="keyword">
 		<button>検索</button>
 	</form>
 
-	<form
-		@submit.prevent="
-		    resetErr();
-			api.delete('/messages')
-				.then(() => {
-					messages = [];
-					success = '全メッセージを削除しました。';
-				}) 
-				.catch(e => showErr(e, '削除できませんでした'));
-		  ">
-		<button>Clear</button>
-	</form>
-
-	<div style="color: green" x-show="success">
-		<span x-text="success" @click.outside="success = ''"></span>
+	<div>
+		<button @click="$delete('/messages', { success: '全メッセージを削除しました', error: '削除できませんでした' })
+			.then(res => { if (res.status==204) messages.length=0 })">Clear</button>
 	</div>
 
-	<div style="color: red" x-show="errors.length > 0">
-		<template x-for="err in errors">
-			<div x-text="err"></div>
+	<div style="color: green" x-show="$store.successes.length > 0">
+		<template x-for="success in $store.successes">
+			<div x-text="success"></div>
+		</template> 
+	</div>
+
+	<div style="color: red" x-show="$store.errors.length > 0">
+		<template x-for="error in $store.errors">
+			<div x-text="error"></div>
 		</template> 
 	</div>
 	
@@ -85,8 +58,8 @@
 	</div>
 
 	<script type="module">
-		import api from '${mvc.basePath}/../api.js';
-		api.start('${mvc.basePath}/api', '${mvc.csrf.token}');
+		import rest from '${mvc.basePath}/../rest.js';
+		rest.start('${mvc.basePath}/api', '${mvc.csrf.token}');
 	</script>
 </body>
 </html>

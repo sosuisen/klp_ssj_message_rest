@@ -28,6 +28,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
@@ -74,11 +75,13 @@ public class Users {
 	
 	// POST /api/users
 	@POST
-	public UserDTO postUser(@Valid @ConvertGroup(to = CreateChecks.class) UserDTO user) throws SQLException {
+	public Response postUser(@Valid @ConvertGroup(to = CreateChecks.class) UserDTO user) throws SQLException {
 		checkCsrf();			
 		var hash = passwordHash.generate(user.getPassword().toCharArray());
 		user.setPassword(hash);
-		return usersDAO.create(user);		
+		return Response.status(201)
+				.entity(usersDAO.create(user))
+				.build();
 	}
 
 	// PUT /api/users/{name}
@@ -96,8 +99,9 @@ public class Users {
 	// DELETE /api/users/{name}
 	@DELETE
 	@Path("{name}")
-	public void deleteUser(@PathParam("name") String name) throws SQLException {
+	public Response deleteUser(@PathParam("name") String name) throws SQLException {
 		checkCsrf();			
 		usersDAO.delete(name);
+		return Response.status(204).build();
 	}
 }
