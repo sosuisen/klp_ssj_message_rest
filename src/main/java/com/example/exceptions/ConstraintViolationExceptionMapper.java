@@ -1,4 +1,4 @@
-package com.example.resources;
+package com.example.exceptions;
 
 import java.util.List;
 
