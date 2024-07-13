@@ -10,7 +10,7 @@
 </head>
 <body
 	x-data="{ users: []	}"
-	x-init="$get('/users', { error: '一覧を取得できませんでした' }).then(res => if(res.status==200) users = res)">
+	x-init="$get('/users', { error: '一覧を取得できませんでした' }).then(res => { if(res.status==200) users = res.data })">
 
 	[<a href="${mvc.basePath}/">ホーム</a>][<a href="${mvc.basePath}/list">メッセージページ</a>][<a href="${mvc.basePath}/logout">ログアウト</a>]
 	<hr>
@@ -29,16 +29,16 @@
 
 	<h1>新規ユーザ追加</h1>
 
-	<div class="row_create" autocomplete="off"
+	<form class="row_create" autocomplete="off"
 		x-data="{ param: { name: '', role: '', password: ''} }"
 		@submit.prevent="$post('/users', { param, success: 'ユーザを作成しました', error: 'ユーザを作成できませんでした' })
-			.then(res => { if (res.status==201) users.push(res), json = { name: '', role: '', password: ''} })">
+			.then(res => { if (res.status==201) users.push(res.data), json = { name: '', role: '', password: ''} })">
 		<span>ユーザ名</span> <span>ロール</span> <span>パスワード</span> <span></span>
 		<input type="text" x-model="param.name">
 		<input type="text" x-model="param.role">
 		<input type="password" x-model="param.password">
 		<button>追加</button>
-	</div>
+	</form>
 	<hr>
 	<h1>ユーザ一覧</h1>
 	<div>
@@ -54,9 +54,9 @@
 				<input type="text" x-model="param.role">
 				<input type="password" x-model="param.password">
 				<button @click="$put('/users/' + name, { param, success: '更新しました', error: '更新できませんでした' })
-					.then(() => { if (res.status==200) row.password = '' })">更新</button>
+					.then(res => { if (res.status==200) row.password = '' })">更新</button>
 				<button @click="$delete('/users/' + name, { success: '削除しました。', error: '削除できませんでした' })
-					.then(() => { if (res.status==204) users = users.filter(u => u.name != name) })">削除</button>
+					.then(res => { if (res.status==204) users = users.filter(u => u.name != name) })">削除</button>
 			</div>
 		</template>
 	</div>

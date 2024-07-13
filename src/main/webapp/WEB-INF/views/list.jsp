@@ -24,7 +24,7 @@
 		<button>送信</button>
 	</form>
 
-	<div x-data="{ keyword: '' }"
+	<form x-data="{ keyword: '' }"
 		@submit.prevent="$get('/messages?keyword=' + keyword, { error: '検索できませんでした' })
 			.then(res => { if (res.status==200) messages = res.data })">
 		検索語：<input type="text" x-model="keyword">
