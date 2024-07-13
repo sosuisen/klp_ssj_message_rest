@@ -10,7 +10,6 @@ import com.example.model.validator.CreateChecks;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.security.PermitAll;
-import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.mvc.MvcContext;
@@ -71,7 +70,7 @@ public class Messages {
 	// レスポンスステータスコードが200の場合、戻り値はデータオブジェクトそのままでよい
 	@GET
 	public ArrayList<MessageDTO> getMessages(@QueryParam("keyword") String keyword) throws SQLException {
-		checkCsrf();		
+		// checkCsrf();		
 		if (keyword == null) {
 			return messagesDAO.getAll();
 		}
@@ -84,7 +83,7 @@ public class Messages {
 	// 200以外を返したい場合、戻り値はResponse型
 	@POST
 	public Response postMessage(@Valid @ConvertGroup(to = CreateChecks.class) MessageDTO mes) throws SQLException {
-		checkCsrf();
+		// checkCsrf();
 		mes.setName(req.getRemoteUser());
 		
 
@@ -95,9 +94,9 @@ public class Messages {
 
 	// DELETE /api/messages
 	@DELETE
-	@RolesAllowed("ADMIN")
+	// @RolesAllowed("ADMIN")
 	public Response deleteMessages() throws SQLException {
-		checkCsrf();		
+		// checkCsrf();		
 		messagesDAO.deleteAll();
 		return Response.status(204).build();
 	}

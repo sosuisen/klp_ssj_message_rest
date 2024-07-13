@@ -9,7 +9,6 @@ import com.example.model.user.UserDTO;
 import com.example.model.user.UsersDAO;
 
 import jakarta.annotation.PostConstruct;
-import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.mvc.MvcContext;
@@ -32,7 +31,7 @@ import lombok.extern.java.Log;
 @Consumes(MediaType.APPLICATION_JSON)
 @NoArgsConstructor(force = true)
 @RequiredArgsConstructor(onConstructor_ = @Inject)
-@RolesAllowed("ADMIN")
+// @RolesAllowed("ADMIN")
 @Log
 @Path("/api/users")
 public class Users {

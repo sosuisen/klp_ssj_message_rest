@@ -4,7 +4,6 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 
 import jakarta.annotation.PostConstruct;
-import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.mvc.Controller;
@@ -23,7 +22,7 @@ import lombok.extern.java.Log;
 @NoArgsConstructor(force = true)
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 @Log
-@RolesAllowed("ADMIN")
+// @RolesAllowed("ADMIN")
 @Path("/")
 public class UserController {
 	private final HttpServletRequest req;
