@@ -60,7 +60,7 @@ public class Users {
 	// GET /api/users
 	@GET
 	public ArrayList<UserDTO> getUser() throws SQLException {
-		checkCsrf();			
+		// checkCsrf();			
 		return usersDAO.getAll();
 	}
 
