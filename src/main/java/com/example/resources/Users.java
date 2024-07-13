@@ -7,7 +7,6 @@ import java.util.logging.Level;
 import com.example.auth.IdentityStoreConfig;
 import com.example.model.user.UserDTO;
 import com.example.model.user.UsersDAO;
-import com.example.model.validator.CreateChecks;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.security.RolesAllowed;
@@ -16,19 +15,12 @@ import jakarta.inject.Inject;
 import jakarta.mvc.MvcContext;
 import jakarta.security.enterprise.identitystore.Pbkdf2PasswordHash;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
-import jakarta.validation.groups.ConvertGroup;
 import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
@@ -72,36 +64,5 @@ public class Users {
 		checkCsrf();			
 		return usersDAO.getAll();
 	}
-	
-	// POST /api/users
-	@POST
-	public Response postUser(@Valid @ConvertGroup(to = CreateChecks.class) UserDTO user) throws SQLException {
-		checkCsrf();			
-		var hash = passwordHash.generate(user.getPassword().toCharArray());
-		user.setPassword(hash);
-		return Response.status(201)
-				.entity(usersDAO.create(user))
-				.build();
-	}
 
-	// PUT /api/users/{name}
-	@PUT
-	@Path("{name}")
-	public UserDTO updateUser(@PathParam("name") String name, @Valid UserDTO user) throws SQLException {
-		checkCsrf();
-		if (!user.getPassword().isEmpty()) {
-			var hash = passwordHash.generate(user.getPassword().toCharArray());
-			user.setPassword(hash);
-		}		
-		return usersDAO.update(name, user);
-	}
-
-	// DELETE /api/users/{name}
-	@DELETE
-	@Path("{name}")
-	public Response deleteUser(@PathParam("name") String name) throws SQLException {
-		checkCsrf();			
-		usersDAO.delete(name);
-		return Response.status(204).build();
-	}
 }
