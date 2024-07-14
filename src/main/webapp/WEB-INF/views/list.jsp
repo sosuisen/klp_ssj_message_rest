@@ -49,13 +49,9 @@
 	</div>
 	
 	<h1>メッセージ一覧</h1>
-	<div>
-		<template x-for="mes in messages">
-			<div>
-				<span x-text="mes.name"></span>:<span x-text="mes.message"></span>
-			</div>
-		</template>
-	</div>
+	<template x-for="mes in messages">
+		<div><span x-text="mes.name"></span>:<span x-text="mes.message"></span></div>
+	</template>
 
 	<script type="module">
 		import rest from '${mvc.basePath}/../rest.js';
